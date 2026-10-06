@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>SIPEMAS RT/RW - Kelurahan Sindangsari</title>
+  <meta name="theme-color" content="#9F1239">
+  <meta name="description" content="SIPEMAS RT/RW Kelurahan Sindangsari">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="SIPEMAS">
+  <style>
+    html, body { margin: 0; height: 100%; background: #701A2E; font-family: system-ui, sans-serif; }
+    #app { position: fixed; inset: 0; width: 100%; height: 100%; border: 0; background: #fff; }
+    #splash, #offline, #setup {
+      position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 14px; color: #fff; text-align: center; padding: 24px; background: #701A2E;
+    }
+    #splash img { width: 96px; height: 96px; border-radius: 22px; }
+    #offline, #setup { display: none; }
+    button { background: #FFFFFF; color: #701A2E; border: 0; border-radius: 12px; padding: 12px 22px; font-weight: 700; font-size: 15px; }
+    code { background: rgba(255,255,255,.15); padding: 2px 6px; border-radius: 6px; word-break: break-all; }
+  </style>
+</head>
+<body>
+  <iframe id="app" title="SIPEMAS RT/RW Kelurahan Sindangsari"
+          allow="geolocation; camera; clipboard-write; fullscreen"
+          referrerpolicy="no-referrer-when-downgrade" hidden></iframe>
+
+  <div id="splash"><img src="icon-192.png" alt=""><div>Memuat SIPEMAS...</div></div>
+
+  <div id="offline">
+    <div style="font-size:44px">📡</div>
+    <div style="font-weight:700;font-size:18px">Tidak ada koneksi internet</div>
+    <div style="opacity:.8">Data SK dan arsip membutuhkan internet.</div>
+    <button onclick="location.reload()">Coba Lagi</button>
+  </div>
+
+  <div id="setup">
+    <div style="font-weight:700;font-size:18px">URL aplikasi belum diatur</div>
+    <div>Buka <code>index.html</code>, lalu isi <code>APP_URL</code> dengan URL web app Apps Script (berakhiran <code>/exec</code>).</div>
+  </div>
+
+  <script>
+    // >>> GANTI dengan URL web app Apps Script SIPEMAS (berakhiran /exec) <<<
+    var APP_URL = 'GANTI_DENGAN_URL_WEB_APP_ANDA';
+
+    // 'iframe'   : tampil di dalam PWA (tetap layar penuh seperti aplikasi)
+    // 'redirect' : langsung pindah ke URL Apps Script. Pakai ini HANYA bila GPS/kamera
+    //              presensi ternyata diblokir di mode iframe.
+    var MODE = 'iframe';
+
+    var frame = document.getElementById('app');
+    var splash = document.getElementById('splash');
+    var offline = document.getElementById('offline');
+    var setup = document.getElementById('setup');
+    function show(el) { el.style.display = 'flex'; }
+    function hide(el) { el.style.display = 'none'; }
+
+    function start() {
+      if (!/^https:\/\/script\.google\.com\/(a\/macros\/[^\/]+\/)?macros\/s\/[^\/]+\/exec/.test(APP_URL)) {
+        hide(splash); show(setup); return;
+      }
+      if (!navigator.onLine) { hide(splash); show(offline); return; }
+      if (MODE === 'redirect') { location.replace(APP_URL); return; }
+      frame.onload = function() { frame.hidden = false; hide(splash); hide(offline); };
+      frame.src = APP_URL;
+    }
+
+    window.addEventListener('offline', function() { show(offline); });
+    window.addEventListener('online', function() { location.reload(); });
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('sw.js').catch(function(e) { console.warn('SW gagal didaftarkan:', e); });
+      });
+    }
+    start();
+  </script>
+</body>
+</html>
